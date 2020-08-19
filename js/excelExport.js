@@ -3,6 +3,8 @@
  * https://www.npmjs.com/package/xlsx-style
  * ####################################################################################################
  */
+
+
 var excelExport = {
     config: {
         fileName: "report",
@@ -30,6 +32,79 @@ var excelExport = {
         }
         this.config['fileFullName'] = this.config.fileName + this.config.extension;
     },
+	
+  JSONToCSVConvertor: function(JSONData, ReportTitle) {
+  //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
+  var arrData = typeof JSONData != 'object' ? JSON.parse(JSONData) : JSONData;
+
+  var CSV = "";
+  //Set Report title in first row or line
+
+    var row = "";
+ for (var key in arrData.labels)
+ {
+               
+    var cellObj = arrData.labels[key];
+	
+	//extract each column and convert it in string comma-seprated
+  
+      row += '"' + arrData.labels[key] + '",';
+    
+    //add a line break after each row
+    
+  }
+	CSV += row + '\r\n';
+	
+  for (var i = 0; i < arrData.data.length; i++) {
+    var row = "";
+
+    //2nd loop will extract each column and convert it in string comma-seprated
+    for (var index in arrData.data[i]) {
+      row += '"' + arrData.data[i][index] + '",';
+    }
+
+    row.slice(0, row.length - 1);
+
+    //add a line break after each row
+    CSV += row + '\r\n';
+  }
+
+  if (CSV == '') {
+    alert("Invalid data");
+    return;
+  }
+
+  //Generate a file name
+  var fileName = "MyReport_";
+  //this will remove the blank-spaces from the title and replace it with an underscore
+  fileName += ReportTitle.replace(/ /g, "_");
+
+  //Initialize file format you want csv or xls
+  var uri = 'data:text/csv;charset=utf-8,%EF%BB%BF' + escape(CSV);
+
+  // Now the little tricky part.
+  // you can use either>> window.open(uri);
+  // but this will not work in some browsers
+  // or you will not get the correct file extension    
+
+  //this trick will generate a temp <a /> tag
+  var link = document.createElement("a");
+  link.href = uri;
+
+  //set the visibility hidden so it will not effect on your web-layout
+  link.style = "visibility:hidden";
+  link.download = fileName + ".csv";
+
+  //this part will append the anchor tag and remove it after automatic click
+  document.body.appendChild(link);
+  var universalBOM = "\uFEFF";
+
+link.setAttribute('href', 'data:text/csv; charset=utf-8,' + encodeURIComponent(universalBOM+CSV));
+link.setAttribute('download', 'example.csv');
+
+  link.click();
+  document.body.removeChild(link);
+},
     reset: function () {
         this.range = {s: {c: 10000000, r: 10000000}, e: {c: 0, r: 0}};
         this.worksheetObj = {};
